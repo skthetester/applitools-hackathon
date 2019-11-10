@@ -5,17 +5,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
-import org.testng.asserts.SoftAssert;
 import com.applitools.eyes.selenium.Eyes;
 
 /**
  * Visual AI Tests using Applitools
  * Author: Sivakumar Ganesan
- * Created: 11/08/2019
+ * Created: 11/09/2019
  */
 public class VisualAITests {
     private WebDriver driver;
@@ -52,7 +50,7 @@ public class VisualAITests {
         driver.get(baseURL);
 
         //Validate the UI elements in login page
-        validateWindow();
+        validateWindow("Login Page");
     }
 
     @DataProvider(name = "data-provider")
@@ -69,27 +67,17 @@ public class VisualAITests {
         driver.get(baseURL);
 
         //Validate the login feature
-        WebElement userName = driver.findElement(By.id("username"));
-        WebElement pwd = driver.findElement(By.id("password"));
-        WebElement loginBtn = driver.findElement(By.id("log-in"));
-
-        //Enter credentials
-        userName.sendKeys(userNameText);
-        pwd.sendKeys(passwordText);
-        loginBtn.click();
+        login(userNameText, passwordText);
 
         if (!errorText.equals("")) {
             WebElement errorAlert = driver.findElement(By.xpath("/html/body/div/div/div[3]"));
 
             //Validate the UI elements in login page
             validateWindow(errorText);
-
             Assert.assertEquals(errorAlert.getText(), errorText);
         } else {
             //Validate the UI elements in login page
             validateWindow("Successful Login");
-
-            Assert.assertTrue(driver.getCurrentUrl().contains("hackathonApp"), "Login unsuccessful >>");
         }
     }
 
@@ -99,12 +87,7 @@ public class VisualAITests {
         driver.get(baseURL);
 
         //Login
-        WebElement userName = driver.findElement(By.id("username"));
-        WebElement pwd = driver.findElement(By.id("password"));
-        WebElement loginBtn = driver.findElement(By.id("log-in"));
-        userName.sendKeys("user");
-        pwd.sendKeys("password");
-        loginBtn.click();
+        login("username", "password");
 
         //Get table info before sort
         Thread.sleep(5000);
@@ -127,12 +110,7 @@ public class VisualAITests {
         driver.get(baseURL);
 
         //Login
-        WebElement userName = driver.findElement(By.id("username"));
-        WebElement pwd = driver.findElement(By.id("password"));
-        WebElement loginBtn = driver.findElement(By.id("log-in"));
-        userName.sendKeys("user");
-        pwd.sendKeys("password");
-        loginBtn.click();
+        login("username", "password");
 
         //Compare Expenses
         WebElement compareExp = driver.findElement(By.id("showExpensesChart"));
@@ -149,12 +127,7 @@ public class VisualAITests {
         driver.get(baseURL);
 
         //Login
-        WebElement userName = driver.findElement(By.id("username"));
-        WebElement pwd = driver.findElement(By.id("password"));
-        WebElement loginBtn = driver.findElement(By.id("log-in"));
-        userName.sendKeys("user");
-        pwd.sendKeys("password");
-        loginBtn.click();
+        login("username", "password");
 
         //Compare Expenses
         WebElement compareExp = driver.findElement(By.id("showExpensesChart"));
@@ -174,35 +147,12 @@ public class VisualAITests {
         driver.get(baseURL.replace(".html", ".html?showAd=true"));
 
         //Login
-        WebElement userName = driver.findElement(By.id("username"));
-        WebElement pwd = driver.findElement(By.id("password"));
-        WebElement loginBtn = driver.findElement(By.id("log-in"));
-        userName.sendKeys("user");
-        pwd.sendKeys("password");
-        loginBtn.click();
+        login("username", "password");
 
         //Validate the flash sale images
         eyes.setMatchLevel(MatchLevel.LAYOUT);
         validateWindow("Flash Sale");
 
-        int flashSale1 = driver.findElements(By.xpath("//*[@id=\"flashSale\"]/img")).size();
-        int flashSale2 = driver.findElements(By.xpath("//*[@id=\"flashSale2\"]/img")).size();
-
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(flashSale1, 1, "Flash sale 1 not found >>");
-        softAssert.assertEquals(flashSale2, 1, "Flash sale 2 not found >>");
-        /*ERROR: Presence of Image is validated but not the image itself. */
-        softAssert.assertAll();
-    }
-
-    /**
-     * Common method for eyes to check window
-     */
-    private void validateWindow() {
-        eyes.open(driver, "Hackathon Demo App", Thread.currentThread().getStackTrace()[2].getMethodName(), new RectangleSize(1200, 800));
-        eyes.setForceFullPageScreenshot(true);
-        eyes.checkWindow();
-        eyes.close();
     }
 
     /**
@@ -223,6 +173,18 @@ public class VisualAITests {
         eyes.open(driver, "Hackathon Demo App", Thread.currentThread().getStackTrace()[2].getMethodName() + " - " + testName, new RectangleSize(1200, 800));
         eyes.checkElement(locator);
         eyes.close();
+    }
+
+    /**
+     * Common method to login
+     */
+    private void login(String userNameText, String passwordText) {
+        WebElement userName = driver.findElement(By.id("username"));
+        WebElement pwd = driver.findElement(By.id("password"));
+        WebElement loginBtn = driver.findElement(By.id("log-in"));
+        userName.sendKeys(userNameText);
+        pwd.sendKeys(passwordText);
+        loginBtn.click();
     }
 
     @AfterTest

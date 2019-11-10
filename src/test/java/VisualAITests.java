@@ -1,3 +1,5 @@
+import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.RectangleSize;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -18,8 +20,9 @@ import com.applitools.eyes.selenium.Eyes;
 public class VisualAITests {
     private WebDriver driver;
     //Choose the ACME app version. It can either be 1.0 or 2.0.
-    private String ACMEAppVersion = "1.0";
+    private String ACMEAppVersion = "2.0";
     private String baseURL = "https://demo.applitools.com/";
+    private String batchName = "Hackathon Demo App - Ver " + ACMEAppVersion + " - Regression";
 
     // Applitools
     private Eyes eyes;
@@ -28,9 +31,6 @@ public class VisualAITests {
     public void setupDriver() {
         //Setup Chrome driver
         System.setProperty("webdriver.chrome.driver", "drivers/chromedriver.exe");
-//        ChromeOptions options = new ChromeOptions();
-//        options.addArguments("--start-maximized");
-//        options.addArguments("--disable-notifications");
         driver = new ChromeDriver();
 
         //Setup the base URL based on the given version
@@ -39,26 +39,14 @@ public class VisualAITests {
         else Assert.fail("Incorrect app version. It can either be 1.0 or 2.0.");
     }
 
-
-
     @BeforeClass
     private void initiateEyes() {
         eyes = new Eyes();
         eyes.setApiKey("97OYHwvhyiMZKbgtOuz7101YlHj106URaWrrl6PCBO104R9ERo110");
+        eyes.setBatch(new BatchInfo(batchName));
     }
 
-    private void validateWindow() {
-        eyes.open(driver, "Hackathon App", "Sivakumar Ganesan Test ", new RectangleSize(1200, 800)); //+ Thread.currentThread().getStackTrace()[2].getMethodName());
-        eyes.checkWindow();
-        eyes.close();
-    }
-
-    @AfterTest
-    private void closeEyes() {
-        eyes.abortIfNotClosed();
-    }
-
-    @Test
+    @Test(priority = 1)
     public void Verify_Login_Page_Elements() {
         //Open the ACME app
         driver.get(baseURL);
@@ -71,12 +59,11 @@ public class VisualAITests {
     public Object[][] dataProviderMethod() {
         return new Object[][]{{"", "", "Both Username and Password must be present"},
                 {"only username", "", "Password must be present"},
-                /* ERROR: Failed to detect the error message in Version 2 for this data as XPATH changed */
                 {"", "only password", "Username must be present"},
                 {"test", "password", ""}};
     }
 
-    @Test(dataProvider = "data-provider", priority = 2, enabled = false)
+    @Test(dataProvider = "data-provider", priority = 2)
     public void Data_Driven_Test(String userNameText, String passwordText, String errorText) {
         //Open the ACME app
         driver.get(baseURL);
@@ -86,22 +73,31 @@ public class VisualAITests {
         WebElement pwd = driver.findElement(By.id("password"));
         WebElement loginBtn = driver.findElement(By.id("log-in"));
 
+        //Enter credentials
         userName.sendKeys(userNameText);
         pwd.sendKeys(passwordText);
         loginBtn.click();
 
         if (!errorText.equals("")) {
             WebElement errorAlert = driver.findElement(By.xpath("/html/body/div/div/div[3]"));
+
+            //Validate the UI elements in login page
+            validateWindow(errorText);
+
             Assert.assertEquals(errorAlert.getText(), errorText);
         } else {
+            //Validate the UI elements in login page
+            validateWindow("Successful Login");
+
             Assert.assertTrue(driver.getCurrentUrl().contains("hackathonApp"), "Login unsuccessful >>");
         }
     }
 
-    @Test(priority = 3, enabled = false)
+    @Test(priority = 3)
     public void Table_Sort_Test() throws InterruptedException {
         //Open the ACME app
         driver.get(baseURL);
+
         //Login
         WebElement userName = driver.findElement(By.id("username"));
         WebElement pwd = driver.findElement(By.id("password"));
@@ -113,28 +109,19 @@ public class VisualAITests {
         //Get table info before sort
         Thread.sleep(5000);
 
+        //Validate the UI elements in home screen - before sort
+        validateWindow("Home Screen Before Sort");
 
         //Sort Table
         WebElement amountHeader = driver.findElement(By.id("amount"));
         amountHeader.click();
         Thread.sleep(5000);
 
-        //Get table info after sort
-
-
-        //Validate if rows are sorted by "Amount"
-//        SoftAssert softAssert = new SoftAssert();
-//        softAssert.assertTrue(manualSortedKeys.equals(appSortedKeys), "Sorting by Amount failed >>");
-//
-//        //Validate if all rows are sorted and matching
-//        for (int k = 0; k < appSortedKeys.size(); k++) {
-//            double amountKey = appSortedKeys.get(0);
-//            softAssert.assertEquals(mapBefore.get(amountKey), mapAfter.get(amountKey), "Mismatch in data row after sorting >>");
-//        }
-//        softAssert.assertAll();
+        //Validate the UI elements in home screen - after sort
+        validateWindow("Home Screen After Sort");
     }
 
-    @Test(priority = 4, enabled = false)
+    @Test(priority = 4)
     public void Canvas_Chart_Test() {
         //Open the ACME app
         driver.get(baseURL);
@@ -150,17 +137,38 @@ public class VisualAITests {
         //Compare Expenses
         WebElement compareExp = driver.findElement(By.id("showExpensesChart"));
         compareExp.click();
-        /* ERROR: Unable to validate the canvas */
-        Assert.fail("Unable to validate!");
+
+        //Validate the Canvas
+        validateElement(By.id("canvas"), "Canvas - 2017 & 2018");
+
+    }
+
+    @Test(priority = 5)
+    public void Canvas_Chart_2019_Test() {
+        //Open the ACME app
+        driver.get(baseURL);
+
+        //Login
+        WebElement userName = driver.findElement(By.id("username"));
+        WebElement pwd = driver.findElement(By.id("password"));
+        WebElement loginBtn = driver.findElement(By.id("log-in"));
+        userName.sendKeys("user");
+        pwd.sendKeys("password");
+        loginBtn.click();
+
+        //Compare Expenses
+        WebElement compareExp = driver.findElement(By.id("showExpensesChart"));
+        compareExp.click();
 
         //Show data for next year
         WebElement nxtYearData = driver.findElement(By.id("addDataset"));
         nxtYearData.click();
-        /* ERROR: Unable to validate the canvas with new data */
-        Assert.fail("Unable to validate!");
+
+        //Validate the Canvas
+        validateElement(By.id("canvas"), "Canvas - 2019");
     }
 
-    @Test(priority = 5, enabled = false)
+    @Test(priority = 6, enabled = true)
     public void Dynamic_Content_Test() {
         //Open the ACME app
         driver.get(baseURL.replace(".html", ".html?showAd=true"));
@@ -173,6 +181,10 @@ public class VisualAITests {
         pwd.sendKeys("password");
         loginBtn.click();
 
+        //Validate the flash sale images
+        eyes.setMatchLevel(MatchLevel.LAYOUT);
+        validateWindow("Flash Sale");
+
         int flashSale1 = driver.findElements(By.xpath("//*[@id=\"flashSale\"]/img")).size();
         int flashSale2 = driver.findElements(By.xpath("//*[@id=\"flashSale2\"]/img")).size();
 
@@ -181,6 +193,41 @@ public class VisualAITests {
         softAssert.assertEquals(flashSale2, 1, "Flash sale 2 not found >>");
         /*ERROR: Presence of Image is validated but not the image itself. */
         softAssert.assertAll();
+    }
+
+    /**
+     * Common method for eyes to check window
+     */
+    private void validateWindow() {
+        eyes.open(driver, "Hackathon Demo App", Thread.currentThread().getStackTrace()[2].getMethodName(), new RectangleSize(1200, 800));
+        eyes.setForceFullPageScreenshot(true);
+        eyes.checkWindow();
+        eyes.close();
+    }
+
+    /**
+     * Common method for eyes to check window
+     */
+    private void validateWindow(String testName) {
+        eyes.open(driver, "Hackathon Demo App", Thread.currentThread().getStackTrace()[2].getMethodName() + " - " + testName, new RectangleSize(1200, 800));
+        eyes.setForceFullPageScreenshot(true);
+        eyes.checkWindow();
+        eyes.close();
+    }
+
+
+    /**
+     * Common method for eyes to check specific element
+     */
+    private void validateElement(By locator, String testName) {
+        eyes.open(driver, "Hackathon Demo App", Thread.currentThread().getStackTrace()[2].getMethodName() + " - " + testName, new RectangleSize(1200, 800));
+        eyes.checkElement(locator);
+        eyes.close();
+    }
+
+    @AfterTest
+    private void closeEyes() {
+        eyes.abortIfNotClosed();
     }
 
     @AfterClass

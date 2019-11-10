@@ -9,6 +9,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ProjectId" id="1TOKwLifpbft94SMK3CbdPuyJZG" />
+  <component name="PropertiesComponent">
+    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.0" />
+  </component>
   <component name="RunDashboard">
     <option name="ruleStates">
       <list>
@@ -21,7 +26,18 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="TestNG.VisualAITests">
+    <configuration name="TraditionalTests" type="TestNG" temporary="true" nameIsGenerated="true">
+      <module name="applitools-hackathon" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="TraditionalTests" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="VisualAITests" type="TestNG" temporary="true" nameIsGenerated="true">
       <module name="applitools-hackathon" />
       <option name="PACKAGE_NAME" value="" />
@@ -36,6 +52,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="TestNG.VisualAITests" />
+        <item itemvalue="TestNG.TraditionalTests" />
       </list>
     </recent_temporary>
   </component>
